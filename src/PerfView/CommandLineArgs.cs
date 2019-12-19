@@ -199,6 +199,7 @@ namespace PerfView
         public double SkipMSec;
         public DateTime StartTime;
         public DateTime EndTime;
+        public bool SkipReadingUnreachableEvents;
         public bool ForceNgenRundown;
         public bool DumpHeap;
 
@@ -372,6 +373,7 @@ namespace PerfView
                 "Useful for trimming large ETL files in conjunction with the /MaxEventCount qualifier.");
             parser.DefineOptionalQualifier("StartTime", ref StartTime, "The start date and time used to filter events of the input trace for formats that support this.");
             parser.DefineOptionalQualifier("EndTime", ref EndTime, "The end date and time used to filter events of the input trace for formats that support this.");
+            parser.DefineOptionalQualifier("SkipReadingUnreachableEvents", ref SkipReadingUnreachableEvents, "Skip over events that are not reachable due to start/end time for formats that support this.");
             parser.DefineOptionalQualifier("ContinueOnError", ref ContinueOnError, "Processes bad traces as best it can.");
 
             parser.DefineOptionalQualifier("CpuCounters", ref CpuCounters,

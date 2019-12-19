@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -147,7 +149,7 @@ namespace Microsoft.Diagnostics.Symbols
         /// for the PDB file.</param>
         /// <param name="fileVersion">This is an optional string that identifies the file version (the 'Version' resource information.  
         /// It is used only to provided better error messages for the log.</param>
-        public string FindSymbolFilePath(string pdbFileName, Guid pdbIndexGuid, int pdbIndexAge, string dllFilePath = null, string fileVersion = "")
+        public string FindSymbolFilePath(string pdbFileName, Guid pdbIndexGuid, int pdbIndexAge, string dllFilePath = null, string fileVersion = "", bool portablePdbMatch = false)
         {
             m_log.WriteLine("FindSymbolFilePath: *{{ Locating PDB {0} GUID {1} Age {2} Version {3}", pdbFileName, pdbIndexGuid, pdbIndexAge, fileVersion);
             if (dllFilePath != null)
@@ -229,6 +231,11 @@ namespace Microsoft.Diagnostics.Symbols
                         }
 
                         pdbPath = GetFileFromServer(element.Target, pdbIndexPath, Path.Combine(cache, pdbIndexPath));
+
+                        if (pdbPath == null && portablePdbMatch)
+                        {
+                            pdbPath = GetFileFromServer(element.Target, pdbSimpleName + @"\" + pdbIndexGuid.ToString("N").ToUpper() + "FFFFFFFF" + @"\" + pdbSimpleName, Path.Combine(cache, pdbIndexPath));
+                        }
                     }
                     else
                     {
@@ -427,6 +434,10 @@ namespace Microsoft.Diagnostics.Symbols
                 return m_SymbolCacheDirectory;
             }
         }
+        /// <summary>
+        /// Authorization header to be ued when making requests to source server (only for SourceLink)
+        /// </summary>
+        public string AuthorizationHeaderForSourceLink { get; set; }
         /// <summary>
         /// The place where source is downloaded from a source server.  
         /// </summary>
@@ -1901,11 +1912,21 @@ namespace Microsoft.Diagnostics.Symbols
             if (url != null)
             {
                 HttpClient httpClient = new HttpClient();
+
+                var authorizationHeader = this._symbolModule.SymbolReader.AuthorizationHeaderForSourceLink;
+                if (authorizationHeader != null)
+                {
+                    httpClient.DefaultRequestHeaders.Add("Authorization", authorizationHeader);
+                }
+
                 HttpResponseMessage response = httpClient.GetAsync(url).Result;
 
                 response.EnsureSuccessStatusCode();
                 Stream content = response.Content.ReadAsStreamAsync().Result;
-                string cachedLocation = GetCachePathForUrl(url);
+                string cachedLocation = Path.Combine(
+                    _symbolModule.SymbolReader.SourceCacheDirectory,
+                    BitConverter.ToString(SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(url.ToUpperInvariant())))
+                        .Replace("-", string.Empty));
                 if (cachedLocation != null)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(cachedLocation));
@@ -1986,12 +2007,6 @@ namespace Microsoft.Diagnostics.Symbols
                 byte[] computedHash = _hashAlgorithm.ComputeHash(fileStream);
                 return ArrayEquals(computedHash, _hash);
             }
-        }
-
-        private string GetCachePathForUrl(string url)
-        {
-            var cacheDir = _symbolModule.SymbolReader.SourceCacheDirectory;
-            return (Path.Combine(cacheDir, new Uri(url).AbsolutePath.TrimStart('/').Replace('/', '\\')));
         }
 
         // Should be in the framework, but I could  not find it quickly.  

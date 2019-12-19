@@ -7228,6 +7228,7 @@ table {
             var traceEventDispatcherOptions = new TraceEventDispatcherOptions();
             traceEventDispatcherOptions.StartTime = App.CommandLineArgs.StartTime;
             traceEventDispatcherOptions.EndTime = App.CommandLineArgs.EndTime;
+            traceEventDispatcherOptions.SkipReadingUnreachableEvents = App.CommandLineArgs.SkipReadingUnreachableEvents;
 
             options.MaxEventCount = App.CommandLineArgs.MaxEventCount;
             options.ContinueOnError = App.CommandLineArgs.ContinueOnError;
