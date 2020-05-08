@@ -41,6 +41,7 @@
     <Reference Include="ReachFramework" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Printing" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />

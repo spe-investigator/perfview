@@ -145,10 +145,30 @@
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="619*"/>
             </Grid.ColumnDefinitions>
-            <DockPanel Background="Gray" Grid.Column="0">
-                <controls:HistoryComboBox x:Name="Directory" Margin="4,2,4,2"  DockPanel.Dock="Top" 
+            <Grid Grid.Column="0" Background="Gray">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100*"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="100*" />
+                </Grid.RowDefinitions>
+                <Button x:Name="AzureConnect" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="0" HorizontalAlignment="Left" Margin="4,2,0,2" Width="177" Click="ConnectAzure_Click" Content="Connect Azure"/>
+                <Button x:Name="AzureAdd" Grid.Column="1" Grid.ColumnSpan="1" Grid.Row="0" Margin="4,2,2,2" Click="AddAzure_Click">+</Button>
+                <ListBox x:Name="AzureItemCount" Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="0" Margin="2,2,4,2" SelectedIndex="2">
+                    <ListBoxItem>1</ListBoxItem>
+                    <ListBoxItem>2</ListBoxItem>
+                    <ListBoxItem>3</ListBoxItem>
+                    <ListBoxItem>4</ListBoxItem>
+                    <ListBoxItem>5</ListBoxItem>
+                    <ListBoxItem>N</ListBoxItem>
+                </ListBox>
+                <controls:HistoryComboBox x:Name="Directory" Margin="4,2,4,2" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="1"
                          ToolTip="This is the directory to search for performance data files." TextEntered="DoTextEnteredInDirectoryTextBox" />
-                <Grid DockPanel.Dock="Top" >
+                <Grid Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="100*"/>
@@ -159,7 +179,7 @@
                     </TextBlock>
                     <TextBox Name="FileFilterTextBox" TextChanged="FilterTextChanged" KeyDown="FilterKeyDown" Grid.Column="1" Margin="5,2,2,2" />
                 </Grid>
-                <TreeView x:Name="TreeView" Grid.Column="0" MouseDoubleClick="DoMouseDoubleClickInTreeView" KeyDown="KeyDownInTreeView" SelectedItemChanged="SelectedItemChangedInTreeView"
+                <TreeView x:Name="TreeView" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="3" MouseDoubleClick="DoMouseDoubleClickInTreeView" KeyDown="KeyDownInTreeView" SelectedItemChanged="SelectedItemChangedInTreeView"
                           ToolTip="Double Click to open.  Right click contains additional help and additional options."
                           IsEnabled="{Binding ElementName=StatusBar, Path=IsNotWorking}" AllowDrop="True" Drop="DoDrop">
                     <TreeView.ItemContainerStyle>
@@ -191,7 +211,7 @@
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
-            </DockPanel>
+            </Grid>
             <GridSplitter Grid.Column="1" Width="3"  HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
             <RichTextBox Name="Body" Grid.Column="2" Background="White" IsReadOnly="True" IsDocumentEnabled="True" 
                          IsEnabled="{Binding ElementName=StatusBar, Path=IsNotWorking}" VerticalScrollBarVisibility="auto" Margin="4.667,0,-5,0.07">
@@ -230,10 +250,10 @@
                         <Paragraph>PerfView can collect a time based ETW trace for investigating
                             <Bold>
                                 <Hyperlink Command="Help" CommandParameter="CpuInvestigation">CPU</Hyperlink>
-                            </Bold> and 
+                            </Bold> and
                             <Bold>
                                 <Hyperlink Command="Help" CommandParameter="MakingServerInvestigationEasy">Server Response Time</Hyperlink>
-                            </Bold>, as well as 
+                            </Bold> , as well as
                             <Hyperlink Command="Help" CommandParameter="BlockedTimeInvestigation">Wall Clock / Blocked Time</Hyperlink> ,
                             <Hyperlink Command="Help" CommandParameter="UnmanagedMemoryAnalysis">Unmanaged memory</Hyperlink> or
                             <Hyperlink Command="Help" CommandParameter="GCHeapNetMemStacks">Managed memory</Hyperlink> .

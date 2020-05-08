@@ -1112,65 +1112,58 @@ namespace PerfView
             InitializeFeedback();
         }
         public PerfViewDirectory CurrentDirectory { get { return m_CurrentDirectory; } }
+
         /// <summary>
         /// Set the left pane to the specified directory.  If it is a file name, then that file name is opened
         /// </summary>
         public void OpenPath(string path, bool force = false)
         {
-            // If someone holds down shift, right clicks on a file and selects "Copy as path" it will
-            // contain a starting and ending quote (e.g. "e:\trace.etl" as apposed to e:\trace.etl). If
-            // they then paste this into the MainWindow's directory HistoryComboBox without removing 
-            // the quotes and press enter, an exception will be thrown here. Remove these quotes so 
-            // it doesn't need to be manually done.
-            if (path.StartsWith("\"") && path.EndsWith("\"") && path.Length >= 2)
-            {
-                path = path.Substring(1, path.Length - 2);
-            }
+            if (!(m_CurrentDirectory is PerfViewAzureConfiguration)) {
+                // If someone holds down shift, right clicks on a file and selects "Copy as path" it will
+                // contain a starting and ending quote (e.g. "e:\trace.etl" as apposed to e:\trace.etl). If
+                // they then paste this into the MainWindow's directory HistoryComboBox without removing 
+                // the quotes and press enter, an exception will be thrown here. Remove these quotes so 
+                // it doesn't need to be manually done.
+                if (path.StartsWith("\"") && path.EndsWith("\"") && path.Length >= 2) {
+                    path = path.Substring(1, path.Length - 2);
+                }
 
-            if (System.IO.Directory.Exists(path))
-            {
-                var fullPath = App.MakeUniversalIfPossible(Path.GetFullPath(path));
-                if (force || m_CurrentDirectory == null || fullPath != m_CurrentDirectory.FilePath)
-                {
-                    Directory.Text = fullPath;
-                    if (Directory.AddToHistory(fullPath))
-                    {
-                        StringBuilder sb = new StringBuilder();
-                        foreach (string item in Directory.Items)
-                        {
-                            if (sb.Length != 0)
-                            {
-                                sb.Append(';');
+                if (System.IO.Directory.Exists(path)) {
+                    var fullPath = App.MakeUniversalIfPossible(Path.GetFullPath(path));
+                    if (force || m_CurrentDirectory == null || fullPath != m_CurrentDirectory.FilePath) {
+                        Directory.Text = fullPath;
+                        if (Directory.AddToHistory(fullPath)) {
+                            StringBuilder sb = new StringBuilder();
+                            foreach (string item in Directory.Items) {
+                                if (sb.Length != 0) {
+                                    sb.Append(';');
+                                }
+
+                                sb.Append(item);
                             }
-
-                            sb.Append(item);
+                            App.ConfigData["DirectoryHistory"] = sb.ToString();
                         }
-                        App.ConfigData["DirectoryHistory"] = sb.ToString();
+
+                        FileFilterTextBox.Text = "";
+                        m_CurrentDirectory = new PerfViewDirectory(fullPath);
+                        UpdateFileFilter();
+
+                        string appName = Environment.Is64BitProcess ? "PerfView64" : "PerfView";
+                        string elevatedSuffix = (TraceEventSession.IsElevated() ?? false) ? " (Administrator)" : "";
+                        Title = appName + " " + CurrentDirectory.FilePath + elevatedSuffix;
+                    }
+                } else if (System.IO.File.Exists(path)) {
+                    Open(path);
+                } else {
+                    Directory.RemoveFromHistory(Directory.Text);
+                    if (m_CurrentDirectory != null) {
+                        Directory.Text = m_CurrentDirectory.FilePath;
                     }
 
-                    FileFilterTextBox.Text = "";
-                    m_CurrentDirectory = new PerfViewDirectory(fullPath);
-                    UpdateFileFilter();
-
-                    string appName = Environment.Is64BitProcess ? "PerfView64" : "PerfView";
-                    string elevatedSuffix = (TraceEventSession.IsElevated() ?? false) ? " (Administrator)" : "";
-                    Title = appName + " " + CurrentDirectory.FilePath + elevatedSuffix;
+                    StatusBar.LogError("Directory " + path + " does not exist");
                 }
             }
-            else if (System.IO.File.Exists(path))
-            {
-                Open(path);
-            }
-            else
-            {
-                Directory.RemoveFromHistory(Directory.Text);
-                if (m_CurrentDirectory != null)
-                {
-                    Directory.Text = m_CurrentDirectory.FilePath;
-                }
 
-                StatusBar.LogError("Directory " + path + " does not exist");
-            }
         }
         /// <summary>
         /// Given a file name and format open the file (if format is null we try to infer the format from the file extension)

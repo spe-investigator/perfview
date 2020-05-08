@@ -1185,16 +1185,17 @@ namespace PerfView
         {
             get
             {
-#if PUBLIC_BUILD
-                return false;
-#else
-                if (!s_InternalUser.HasValue)
-                {
-                    s_InternalUser = s_IsUnderTest || SymbolPath.ComputerNameExists(FeedbackServer, 400);
-                }
+                return true;
+//#if PUBLIC_BUILD
+//                return false;
+//#else
+//                if (!s_InternalUser.HasValue)
+//                {
+//                    s_InternalUser = s_IsUnderTest || SymbolPath.ComputerNameExists(FeedbackServer, 400);
+//                }
 
-                return s_InternalUser.Value;
-#endif
+//                return s_InternalUser.Value;
+//#endif
             }
         }
         /// <summary>
